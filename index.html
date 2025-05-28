@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Memory Network - Industry Grade</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at bottom, #0d1421 0%, #000000 100%);
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #ffffff;
+            cursor: grab;
+        }
+        
+        body:active {
+            cursor: grabbing;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* Modern UI Panel */
+        #control-panel {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            width: 320px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .neural-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin: 0;
+        }
+        
+        .panel-subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+            margin: 0;
+        }
+        
+        .control-group {
+            margin-bottom: 16px;
+        }
+        
+        .control-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .slider-container {
+            position: relative;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(71, 85, 105, 0.5);
+            outline: none;
+            -webkit-appearance: none;
+            position: relative;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #3b82f6;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Node Info Panel */
+        #node-info {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        
+        #node-info.active {
+            transform: translateX(0);
+        }
+        
+        .node-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+        
+        .node-content {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+        
+        .connections-list {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        
+        .connection-item {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.2);
+        }
+        
+        /* Modern Toggle Buttons */
+        .toggle-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+            border-radius: 6px;
+            color: #cbd5e1;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-color: transparent;
+            color: white;
+        }
+        
+        /* Loading Animation */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modern Scrollbar */
+        #node-info::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        #node-info::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+        }
+        
+        #node-info::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #control-panel {
+                width: calc(100vw - 48px);
+                max-width: 320px;
+            }
+            
+            #node-info {
+                width: calc(100vw - 48px);
+                max-width: 300px;
+                right: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+        
+        <!-- Control Panel -->
+        <div id="control-panel">
+            <div class="panel-header">
+                <div class="neural-icon">🧠</div>
+                <div>
+                    <h1 class="panel-title">Neural Memory Network</h1>
+                    <p class="panel-subtitle">Interactive Thought Architecture</p>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Animation Speed</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="speed-slider" min="0.1" max="3" step="0.1" value="1">
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Node Intensity</label>
+                <div class="slider-container">
+                    <input type="range" class="slider" id="intensity-slider" min="0.1" max="2" step="0.1" value="1">
+                </div>
+            </div>
+            
+            <div class="toggle-group">
+                <button class="toggle-btn active" id="particles-toggle">Particles</button>
+                <button class="toggle-btn active" id="connections-toggle">Connections</button>
+                <button class="toggle-btn" id="auto-rotate">Auto-Rotate</button>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="node-count">15</span>
+                    <span class="stat-label">Nodes</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="connection-count">20</span>
+                    <span class="stat-label">Links</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="fps-counter">60</span>
+                    <span class="stat-label">FPS</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="zoom-level">120</span>
+                    <span class="stat-label">Distance</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Node Information Panel -->
+        <div id="node-info">
+            <div class="node-title">Select a Node</div>
+            <div class="node-content">Click on any neural node to explore its connections and view detailed information about the thought process.</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Global variables
+        let scene, camera, renderer, composer;
+        let nodes = [], connections = [], particles = [];
+        let selectedNode = null;
+        let animationSpeed = 1;
+        let nodeIntensity = 1;
+        let showParticles = true;
+        let showConnections = true;
+        let autoRotate = false;
+        let frameCount = 0;
+        let lastTime = performance.now();
+        
+        // Enhanced memory facts with categories
+        const memoryFacts = [
+            { text: "Intelligence emerges from pattern recognition", category: "cognition", connections: [1, 7] },
+            { text: "Patterns require data to be discovered", category: "data", connections: [2, 0] },
+            { text: "Data must be represented numerically", category: "representation", connections: [3, 10] },
+            { text: "Numbers form vectors in high dimensions", category: "mathematics", connections: [4, 2] },
+            { text: "Vectors enable mathematical operations", category: "operations", connections: [5, 8] },
+            { text: "Operations transform input to output", category: "transformation", connections: [6, 4] },
+            { text: "Transformations learn through examples", category: "learning", connections: [7, 12] },
+            { text: "Examples teach correct behavior", category: "training", connections: [8, 0] },
+            { text: "Behavior improves with feedback", category: "optimization", connections: [9, 4] },
+            { text: "Feedback adjusts internal parameters", category: "adaptation", connections: [10, 14] },
+            { text: "Parameters encode learned knowledge", category: "memory", connections: [11, 2] },
+            { text: "Knowledge connects related concepts", category: "association", connections: [12, 10] },
+            { text: "Concepts build understanding", category: "comprehension", connections: [13, 6] },
+            { text: "Understanding enables prediction", category: "inference", connections: [14, 12] },
+            { text: "Prediction creates intelligence", category: "cognition", connections: [0, 13] }
+        ];
+
+        // Enhanced materials with HDR-like effects
+        const materials = {
+            node: new THREE.MeshPhysicalMaterial({
+                color: 0x64b5f6,
+                metalness: 0.7,
+                roughness: 0.2,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                emissive: 0x1565c0,
+                emissiveIntensity: 0.2
+            }),
+            selectedNode: new THREE.MeshPhysicalMaterial({
+                color: 0x00e676,
+                metalness: 0.8,
+                roughness: 0.1,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.05,
+                emissive: 0x00c853,
+                emissiveIntensity: 0.4
+            }),
+            connectedNode: new THREE.MeshPhysicalMaterial({
+                color: 0xffd54f,
+                metalness: 0.6,
+                roughness: 0.3,
+                clearcoat: 0.8,
+                emissive: 0xffc107,
+                emissiveIntensity: 0.3
+            })
+        };
+
+        // Initialize the scene
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.002);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(150, 50, 150);
+            
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                powerPreference: "high-performance",
+                stencil: false,
+                depth: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('container').appendChild(renderer.domElement);
+            
+            setupLighting();
+            createNodes();
+            createConnections();
+            createParticleSystem();
+            setupControls();
+            
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 500);
+            }, 1000);
+        }
+
+        // Advanced lighting setup
+        function setupLighting() {
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+            scene.add(ambientLight);
+            
+            // Main directional light
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(100, 100, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 500;
+            scene.add(directionalLight);
+            
+            // Accent lights for atmosphere
+            const light1 = new THREE.PointLight(0x64b5f6, 0.5, 200);
+            light1.position.set(50, 50, 50);
+            scene.add(light1);
+            
+            const light2 = new THREE.PointLight(0x8b5cf6, 0.5, 200);
+            light2.position.set(-50, -50, -50);
+            scene.add(light2);
+            
+            // Background stars
+            const starsGeometry = new THREE.BufferGeometry();
+            const starsVertices = [];
+            for (let i = 0; i < 10000; i++) {
+                starsVertices.push((Math.random() - 0.5) * 2000);
+                starsVertices.push((Math.random() - 0.5) * 2000);
+                starsVertices.push((Math.random() - 0.5) * 2000);
+            }
+            starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+            const starsMaterial = new THREE.PointsMaterial({ color: 0x888888, size: 0.5 });
+            const stars = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(stars);
+        }
+
+        // Create enhanced nodes
+        function createNodes() {
+            const nodeGeometry = new THREE.IcosahedronGeometry(3, 2);
+            
+            memoryFacts.forEach((fact, index) => {
+                const node = new THREE.Mesh(nodeGeometry, materials.node.clone());
+                
+                // Advanced positioning with multiple layers
+                const angle = (index / memoryFacts.length) * Math.PI * 2;
+                const radius = 60 + (index % 3) * 25;
+                const height = Math.sin(index * 0.8) * 40 + Math.cos(index * 0.6) * 30;
+                
+                node.position.set(
+                    Math.cos(angle) * radius,
+                    height,
+                    Math.sin(angle) * radius
+                );
+                
+                // Add glow effect
+                const glowGeometry = new THREE.IcosahedronGeometry(3.5, 1);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x64b5f6,
+                    transparent: true,
+                    opacity: 0.2,
+                    side: THREE.BackSide
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                node.add(glow);
+                
+                node.userData = { 
+                    fact: fact.text,
+                    category: fact.category,
+                    index: index,
+                    originalMaterial: node.material,
+                    glow: glow,
+                    basePosition: node.position.clone()
+                };
+                
+                node.castShadow = true;
+                node.receiveShadow = true;
+                
+                scene.add(node);
+                nodes.push(node);
+            });
+        }
+
+        // Create dynamic connections
+        function createConnections() {
+            connections = [];
+            
+            memoryFacts.forEach((fact, index) => {
+                fact.connections.forEach(targetIndex => {
+                    if (targetIndex < nodes.length) {
+                        createConnection(nodes[index], nodes[targetIndex], index === 0 || targetIndex === 0);
+                    }
+                });
+            });
+            
+            // Add some beautiful cross-connections
+            const crossConnections = [
+                [2, 8], [5, 11], [3, 13], [7, 14], [1, 9], [4, 12], [6, 10]
+            ];
+            
+            crossConnections.forEach(([a, b]) => {
+                if (nodes[a] && nodes[b]) {
+                    createConnection(nodes[a], nodes[b], false, 0.15);
+                }
+            });
+            
+            document.getElementById('connection-count').textContent = connections.length;
+        }
+
+        function createConnection(nodeA, nodeB, isPrimary = false, opacity = 0.4) {
+            const points = [nodeA.position, nodeB.position];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            
+            const material = new THREE.LineBasicMaterial({
+                color: isPrimary ? 0x00e676 : 0x64b5f6,
+                transparent: true,
+                opacity: opacity,
+                linewidth: isPrimary ? 3 : 1
+            });
+            
+            const line = new THREE.Line(geometry, material);
+            scene.add(line);
+            
+            connections.push({
+                line: line,
+                nodeA: nodeA,
+                nodeB: nodeB,
+                isPrimary: isPrimary,
+                originalOpacity: opacity,
+                material: material
+            });
+        }
+
+        // Particle system for ambient effects
+        function createParticleSystem() {
+            const particleCount = 500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 400;
+                positions[i + 1] = (Math.random() - 0.5) * 400;
+                positions[i + 2] = (Math.random() - 0.5) * 400;
+                
+                velocities[i] = (Math.random() - 0.5) * 0.1;
+                velocities[i + 1] = (Math.random() - 0.5) * 0.1;
+                velocities[i + 2] = (Math.random() - 0.5) * 0.1;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const material = new THREE.PointsMaterial({
+                color: 0x64b5f6,
+                size: 1,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const particleSystem = new THREE.Points(geometry, material);
+            particleSystem.userData = { velocities: velocities };
+            scene.add(particleSystem);
+            particles.push(particleSystem);
+        }
+
+        // Enhanced mouse interaction
+        const mouse = new THREE.Vector2();
+        const raycaster = new THREE.Raycaster();
+
+        function onMouseClick(event) {
+            event.preventDefault();
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(nodes);
+            
+            if (intersects.length > 0) {
+                selectNode(intersects[0].object);
+            } else {
+                deselectNode();
+            }
+        }
+
+        function selectNode(node) {
+            // Reset all nodes
+            nodes.forEach(n => {
+                n.material = n.userData.originalMaterial;
+                n.userData.glow.material.opacity = 0.2;
+            });
+            
+            // Reset connections
+            connections.forEach(conn => {
+                conn.material.opacity = conn.originalOpacity;
+                conn.material.color.setHex(conn.isPrimary ? 0x00e676 : 0x64b5f6);
+            });
+            
+            selectedNode = node;
+            node.material = materials.selectedNode;
+            node.userData.glow.material.opacity = 0.5;
+            
+            // Highlight connections
+            const connectedNodes = new Set();
+            connections.forEach(conn => {
+                if (conn.nodeA === node || conn.nodeB === node) {
+                    conn.material.opacity = 1.0;
+                    conn.material.color.setHex(0x00e676);
+                    connectedNodes.add(conn.nodeA === node ? conn.nodeB : conn.nodeA);
+                }
+            });
+            
+            // Highlight connected nodes
+            connectedNodes.forEach(connectedNode => {
+                connectedNode.material = materials.connectedNode;
+                connectedNode.userData.glow.material.opacity = 0.4;
+            });
+            
+            // Update info panel
+            updateNodeInfo(node, connectedNodes);
+        }
+
+        function deselectNode() {
+            if (selectedNode) {
+                nodes.forEach(n => {
+                    n.material = n.userData.originalMaterial;
+                    n.userData.glow.material.opacity = 0.2;
+                });
+                
+                connections.forEach(conn => {
+                    conn.material.opacity = conn.originalOpacity;
+                    conn.material.color.setHex(conn.isPrimary ? 0x00e676 : 0x64b5f6);
+                });
+                
+                selectedNode = null;
+                document.getElementById('node-info').classList.remove('active');
+            }
+        }
+
+        function updateNodeInfo(node, connectedNodes) {
+            const info = document.getElementById('node-info');
+            const fact = memoryFacts[node.userData.index];
+            
+            let connectionsHtml = '';
+            connectedNodes.forEach(connectedNode => {
+                const connectedFact = memoryFacts[connectedNode.userData.index];
+                connectionsHtml += `<div class="connection-item">${connectedFact.text}</div>`;
+            });
+            
+            info.innerHTML = `
+                <div class="node-title">${fact.category.toUpperCase()} NODE</div>
+                <div class="node-content">${fact.text}</div>
+                <div class="connections-list">
+                    <strong>Connected Thoughts (${connectedNodes.size}):</strong>
+                    ${connectionsHtml}
+                </div>
+            `;
+            
+            info.classList.add('active');
+        }
+
+        // Camera controls
+        let isMouseDown = false;
+        let mouseX = 0, mouseY = 0;
+        let cameraAngleX = 0, cameraAngleY = 0;
+        let cameraDistance = 150;
+        const minDistance = 30;
+        const maxDistance = 400;
+
+        function setupControls() {
+            renderer.domElement.addEventListener('click', onMouseClick);
+            renderer.domElement.addEventListener('mousedown', onMouseDown);
+            renderer.domElement.addEventListener('mouseup', onMouseUp);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('wheel', onWheel, { passive: false });
+            
+            // Control panel events
+            document.getElementById('speed-slider').addEventListener('input', (e) => {
+                animationSpeed = parseFloat(e.target.value);
+            });
+            
+            document.getElementById('intensity-slider').addEventListener('input', (e) => {
+                nodeIntensity = parseFloat(e.target.value);
+                updateNodeIntensity();
+            });
+            
+            document.getElementById('particles-toggle').addEventListener('click', toggleParticles);
+            document.getElementById('connections-toggle').addEventListener('click', toggleConnections);
+            document.getElementById('auto-rotate').addEventListener('click', toggleAutoRotate);
+        }
+
+        function onMouseDown(event) {
+            isMouseDown = true;
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+        }
+
+        function onMouseUp() {
+            isMouseDown = false;
+        }
+
+        function onMouseMove(event) {
+            if (isMouseDown) {
+                const deltaX = event.clientX - mouseX;
+                const deltaY = event.clientY - mouseY;
+                
+                cameraAngleX += deltaX * 0.01;
+                cameraAngleY += deltaY * 0.01;
+                cameraAngleY = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraAngleY));
+                
+                mouseX = event.clientX;
+                mouseY = event.clientY;
+            }
+        }
+
+        function onWheel(event) {
+            event.preventDefault();
+            const zoomSpeed = 8;
+            
+            if (event.deltaY > 0) {
+                cameraDistance += zoomSpeed;
+            } else {
+                cameraDistance -= zoomSpeed;
+            }
+            
+            cameraDistance = Math.max(minDistance, Math.min(maxDistance, cameraDistance));
+            document.getElementById('zoom-level').textContent = Math.round(cameraDistance);
+        }
+
+        // Control functions
+        function toggleParticles() {
+            showParticles = !showParticles;
+            particles.forEach(p => p.visible = showParticles);
+            document.getElementById('particles-toggle').classList.toggle('active', showParticles);
+        }
+
+        function toggleConnections() {
+            showConnections = !showConnections;
+            connections.forEach(c => c.line.visible = showConnections);
+            document.getElementById('connections-toggle').classList.toggle('active', showConnections);
+        }
+
+        function toggleAutoRotate() {
+            autoRotate = !autoRotate;
+            document.getElementById('auto-rotate').classList.toggle('active', autoRotate);
+        }
+
+        function updateNodeIntensity() {
+            nodes.forEach(node => {
+                const emissiveIntensity = node === selectedNode ? 0.4 * nodeIntensity : 0.2 * nodeIntensity;
+                node.material.emissiveIntensity = emissiveIntensity;
+                node.userData.glow.material.opacity = node.userData.glow.material.opacity * nodeIntensity;
+            });
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const currentTime = performance.now();
+            const deltaTime = (currentTime - lastTime) * 0.001 * animationSpeed;
+            lastTime = currentTime;
+            frameCount++;
+            
+            // Update FPS counter every 60 frames
+            if (frameCount % 60 === 0) {
+                const fps = Math.round(1000 / (currentTime - (performance.now() - 1000/60)));
+                document.getElementById('fps-counter').textContent = Math.max(0, Math.min(144, fps));
+            }
+            
+            // Auto-rotate camera
+            if (autoRotate) {
+                cameraAngleX += deltaTime * 0.1;
+            }
+            
+            // Update camera position with smooth interpolation
+            const targetX = Math.cos(cameraAngleX) * Math.cos(cameraAngleY) * cameraDistance;
+            const targetY = Math.sin(cameraAngleY) * cameraDistance;
+            const targetZ = Math.sin(cameraAngleX) * Math.cos(cameraAngleY) * cameraDistance;
+            
+            camera.position.x += (targetX - camera.position.x) * 0.1;
+            camera.position.y += (targetY - camera.position.y) * 0.1;
+            camera.position.z += (targetZ - camera.position.z) * 0.1;
+            camera.lookAt(0, 0, 0);
+            
+            // Animate nodes with advanced floating motion
+            nodes.forEach((node, index) => {
+                const basePos = node.userData.basePosition;
+                const time = currentTime * 0.001;
+                
+                // Complex floating motion
+                const floatY = Math.sin(time + index * 0.5) * 3 * animationSpeed;
+                const floatX = Math.cos(time * 0.7 + index * 0.3) * 1.5 * animationSpeed;
+                const floatZ = Math.sin(time * 0.9 + index * 0.7) * 1.5 * animationSpeed;
+                
+                node.position.set(
+                    basePos.x + floatX,
+                    basePos.y + floatY,
+                    basePos.z + floatZ
+                );
+                
+                // Rotation animation
+                node.rotation.x += deltaTime * 0.2;
+                node.rotation.y += deltaTime * 0.3;
+                node.rotation.z += deltaTime * 0.1;
+                
+                // Pulsing glow effect
+                const glowIntensity = 0.2 + Math.sin(time * 2 + index) * 0.1;
+                node.userData.glow.material.opacity = glowIntensity * nodeIntensity;
+                
+                // Enhanced selected node effects
+                if (node === selectedNode) {
+                    const pulseScale = 1 + Math.sin(time * 4) * 0.1;
+                    node.scale.setScalar(pulseScale);
+                    node.material.emissiveIntensity = 0.4 + Math.sin(time * 3) * 0.2;
+                }
+            });
+            
+            // Update connections with dynamic positioning
+            connections.forEach(conn => {
+                const points = [conn.nodeA.position, conn.nodeB.position];
+                conn.line.geometry.setFromPoints(points);
+                
+                // Animate connection opacity
+                if (showConnections) {
+                    const pulseOpacity = conn.originalOpacity + Math.sin(currentTime * 0.002) * 0.1;
+                    conn.material.opacity = Math.max(0.1, pulseOpacity);
+                }
+            });
+            
+            // Animate particles
+            if (showParticles) {
+                particles.forEach(particleSystem => {
+                    const positions = particleSystem.geometry.attributes.position.array;
+                    const velocities = particleSystem.userData.velocities;
+                    
+                    for (let i = 0; i < positions.length; i += 3) {
+                        positions[i] += velocities[i] * animationSpeed;
+                        positions[i + 1] += velocities[i + 1] * animationSpeed;
+                        positions[i + 2] += velocities[i + 2] * animationSpeed;
+                        
+                        // Boundary wrapping
+                        if (Math.abs(positions[i]) > 200) velocities[i] *= -1;
+                        if (Math.abs(positions[i + 1]) > 200) velocities[i + 1] *= -1;
+                        if (Math.abs(positions[i + 2]) > 200) velocities[i + 2] *= -1;
+                    }
+                    
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                    
+                    // Rotate particle system
+                    particleSystem.rotation.y += deltaTime * 0.1;
+                });
+            }
+            
+            // Dynamic lighting effects
+            const lights = scene.children.filter(child => child.isPointLight);
+            lights.forEach((light, index) => {
+                const time = currentTime * 0.001;
+                light.intensity = 0.5 + Math.sin(time * 2 + index) * 0.2;
+                
+                // Move lights in orbital patterns
+                const radius = 100;
+                const angle = time * 0.5 + index * Math.PI;
+                light.position.x = Math.cos(angle) * radius;
+                light.position.z = Math.sin(angle) * radius;
+                light.position.y = Math.sin(time + index) * 50;
+            });
+            
+            // Advanced post-processing effects
+            updatePostProcessing();
+            
+            renderer.render(scene, camera);
+        }
+
+        function updatePostProcessing() {
+            // Update tone mapping based on selected node
+            if (selectedNode) {
+                renderer.toneMappingExposure = 1.2 + Math.sin(performance.now() * 0.003) * 0.2;
+            } else {
+                renderer.toneMappingExposure = 1.2;
+            }
+        }
+
+        // Window resize handler
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.addEventListener('resize', onWindowResize);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            switch(event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    toggleAutoRotate();
+                    break;
+                case 'KeyP':
+                    toggleParticles();
+                    break;
+                case 'KeyC':
+                    toggleConnections();
+                    break;
+                case 'Escape':
+                    deselectNode();
+                    break;
+                case 'KeyR':
+                    // Reset camera
+                    cameraAngleX = 0;
+                    cameraAngleY = 0;
+                    cameraDistance = 150;
+                    break;
+            }
+        });
+
+        // Performance monitoring
+        function initPerformanceMonitoring() {
+            let frameCount = 0;
+            let lastTime = performance.now();
+            
+            setInterval(() => {
+                const currentTime = performance.now();
+                const fps = Math.round(frameCount * 1000 / (currentTime - lastTime));
+                document.getElementById('fps-counter').textContent = fps;
+                frameCount = 0;
+                lastTime = currentTime;
+            }, 1000);
+        }
+
+        // Advanced visual effects
+        function createAdvancedEffects() {
+            // Add bloom effect using custom shader
+            const bloomGeometry = new THREE.PlaneGeometry(2000, 2000);
+            const bloomMaterial = new THREE.ShaderMaterial({
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                vertexShader: `
+                    void main() {
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float time;
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / vec2(1920.0, 1080.0);
+                        float glow = sin(time + uv.x * 10.0) * sin(time + uv.y * 10.0);
+                        gl_FragColor = vec4(0.1, 0.3, 0.8, glow * 0.1);
+                    }
+                `,
+                uniforms: {
+                    time: { value: 0 }
+                }
+            });
+            
+            const bloomMesh = new THREE.Mesh(bloomGeometry, bloomMaterial);
+            bloomMesh.position.z = -500;
+            scene.add(bloomMesh);
+            
+            // Update bloom effect in animation loop
+            const originalAnimate = animate;
+            animate = function() {
+                bloomMaterial.uniforms.time.value = performance.now() * 0.001;
+                originalAnimate();
+            };
+        }
+
+        // Initialize everything
+        function init() {
+            initScene();
+            initPerformanceMonitoring();
+            createAdvancedEffects();
+            animate();
+            
+            // Add some initial animations
+            setTimeout(() => {
+                nodes.forEach((node, index) => {
+                    setTimeout(() => {
+                        node.scale.setScalar(0);
+                        const targetScale = 1;
+                        
+                        const animateScale = () => {
+                            node.scale.x += (targetScale - node.scale.x) * 0.1;
+                            node.scale.y += (targetScale - node.scale.y) * 0.1;
+                            node.scale.z += (targetScale - node.scale.z) * 0.1;
+                            
+                            if (Math.abs(node.scale.x - targetScale) > 0.01) {
+                                requestAnimationFrame(animateScale);
+                            }
+                        };
+                        animateScale();
+                    }, index * 100);
+                });
+            }, 1500);
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
